@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Speedy NDB</title>
 <link rel="apple-touch-icon" href="icone-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
@@ -18,6 +18,8 @@ html, body { margin: 0; height: 100%; background: #fff; font-family: Calibri, Ca
 img { width: 180px; height: 180px; border-radius: 40px; box-shadow: 0 12px 30px -14px rgba(94,26,36,.5); }
 a { color: #fff; background: linear-gradient(135deg, #C23A47, #5E1A24); text-decoration: none; font-weight: 800; padding: 13px 24px; border-radius: 16px; }
 p { margin: 0; color: #6E6264; font-size: 14px; max-width: 22rem; }
+#appli { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+@media (prefers-color-scheme: dark) { html, body, #appli { background: #121212; } }
 </style>
 </head>
 <body>
@@ -31,7 +33,21 @@ p { margin: 0; color: #6E6264; font-size: 14px; max-width: 22rem; }
 // Ouverte normalement dans le navigateur : on reste ici pour pouvoir ajouter la page à l'écran d'accueil.
 (() => {
   const depuisIcone = matchMedia('(display-mode: standalone)').matches || navigator.standalone || /[?&]icone=1/.test(location.search);
-  if (depuisIcone) location.replace("https://script.google.com/macros/s/AKfycbyZw78twmGT4iiryl9SSot7cj_SEea4raXtxM_wmlRca3U57Cksnn8WJAfnWrL08i5-/exec");
+  if (!depuisIcone) return;
+  const url = "https://script.google.com/macros/s/AKfycbyZw78twmGT4iiryl9SSot7cj_SEea4raXtxM_wmlRca3U57Cksnn8WJAfnWrL08i5-/exec";
+  if (!true) { location.replace(url); return; }
+  // L'appli est affichée dans cette page : elle reste en plein écran, sans barre de navigateur.
+  const cadre = document.createElement('iframe');
+  cadre.id = 'appli'; cadre.title = "Speedy NDB";
+  cadre.allow = 'camera; clipboard-write; fullscreen';
+  const vue = (v) => { cadre.src = url + (v === 'affiche' ? '?affiche=1&lanceur=1' : '?lanceur=1'); };
+  vue('app');
+  document.body.replaceChildren(cadre);
+  addEventListener('message', (ev) => {
+    if (!/\.googleusercontent\.com$|^https:\/\/script\.google\.com$/.test(ev.origin)) return;
+    const d = ev.data || {};
+    if (d.speedy === 'vue') vue(d.vue);
+  });
 })();
 </script>
 </body>
